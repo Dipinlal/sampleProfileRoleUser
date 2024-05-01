@@ -85,36 +85,131 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
     const [transactions, settransactions] = useState({});
     const [newState, setNewState] = useState(false)
 
+    // const setParentFunc=((value,masteriId)=>{
+    //     if(masteriId){
+    //         console.log(value,masteriId,"value,masteriId");
+    //         setMasters([{...masters,[masteriId]:value}])
+    //     }
+        
+
+    // })
+
+    const setParentFunc = (value, masteriId) => {
+        if (value == null || masteriId == null) {
+           
+            return; // Exit if data or masterId is invalid
+        }
+        setMasters((prevMasters) => {
+            const index = prevMasters.findIndex((data) => data[masteriId]);
+            if (index !== -1) {
+                // Clone the array and modify only the specific entry
+                const updatedMasters = [...prevMasters];
+                updatedMasters[index] = { [masteriId]: value };
+                return updatedMasters;
+            } else {
+                // Add new data entry if not found
+                return [...prevMasters, { [masteriId]: value }];
+            }
+        });
+    };
+    
+   
+        const flattenMastersData = (masters) => {
+            // Start with an empty array
+            let combinedArray = [];
+        
+            // Iterate through each masteriId object
+            masters.forEach((masterObject) => {
+                const masterId = Object.keys(masterObject)[0]; // Get the masterId, assuming there's only one key per object
+                const items = masterObject[masterId]; // Get the array of items for this masterId
+        
+                // Add masterId to each item and add to the combined array
+                const enhancedItems = items.filter(item => item.TagName !== "").map(item => ({
+                    ...item,
+                    iMasterTypeId: masterId // Ensure all items include their masterId
+                }));
+                
+                combinedArray = combinedArray.concat(enhancedItems);
+            });
+        
+            return combinedArray;
+        };
+       
+        
+  
+    
+    
+
+
+    const parentData = [{
+        1: [{
+            bMaster: true,
+            bReport: true,
+            bTransaction: true,
+            bView: true,
+            TagName: "Backing Washer",
+            iTagId: 2533,
+            iMasterTypeId: 1,
+        },
+        {
+            bMaster: true,
+            bReport: true,
+            bTransaction: true,
+            bView: true,
+            TagName: "Backing Washer",
+            iTagId: 2533,
+            iMasterTypeId: 1,
+        }
+        ]
+    },    {
+        2: [{
+            bMaster: false,
+            bReport: false,
+            bTransaction: true,
+            bView: true,
+            TagName: "Backing Washer",
+            iTagId: 2533,
+            iMasterTypeId: 2,
+        }, {
+            bMaster: true,
+            bReport: true,
+            bTransaction: false,
+            bView: true,
+            TagName: "Backing Washer",
+            iTagId: 2533,
+            iMasterTypeId: 2,
+        }]
+    }]
 
     //ADDITION ACTION DATA CONVERTING OBJECTVISE--------------------------------------------------------------------------------------------
     const additiondata = additions.flatMap(item => {
         const combinedIds = item.combinedIds;
         return combinedIds.map(combinedId => {
-          const [iMenu, iAction] = combinedId.split('_');
-          return {
-            iMenu: parseInt(iMenu),
-            iAction: parseInt(iAction)
-          };
+            const [iMenu, iAction] = combinedId.split('_');
+            return {
+                iMenu: parseInt(iMenu),
+                iAction: parseInt(iAction)
+            };
         });
-      });
+    });
 
-      
-      //exclution action data converting object----------------------------------------------------------------------------------------------
-      const exclutiondata = exclutions.length > 0 ? exclutions.flatMap(item => {
+
+    //exclution action data converting object----------------------------------------------------------------------------------------------
+    const exclutiondata = exclutions.length > 0 ? exclutions.flatMap(item => {
         const combinedIds = item.combinedIds;
         return combinedIds.map(combinedId => {
-          const [iMenu, iAction] = combinedId.split('_');
-          return {
-            iMenu: parseInt(iMenu),
-            iAction: parseInt(iAction)
-          };
+            const [iMenu, iAction] = combinedId.split('_');
+            return {
+                iMenu: parseInt(iMenu),
+                iAction: parseInt(iAction)
+            };
         });
-      }) : [];
+    }) : [];
 
-
-      console.log(masters,"masters=================================================");
 
     
+
+
 
 
 
@@ -134,7 +229,7 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
                 setProfileId(profileIds);
             }
         } else {
-            console.log('totalData is not an array or is empty.');
+           
         }
     }, [AssignedProfiles, AssignedProfilesObj]);
 
@@ -180,9 +275,11 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
             GetProfileDetails7()
         }
     }, [])
+    
 
 
     const handleSaveAccount = async () => {
+        const flattenedData = flattenMastersData(masters);
         if (mode1 === "edit") {
             if (!name) {
                 Swal.fire({
@@ -209,7 +306,7 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
                     roleId: formDataEdit,
                     roleName: name,
                     profileId: ProfileId,
-                    rolesMasters: masters,
+                    rolesMasters: flattenedData,
                     roleTransRights: transactions,
                     menuActionAddition: additiondata,
                     menuActionExclusion: exclutiondata
@@ -255,11 +352,12 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
                 return;
             }
             try {
+                
                 const response = await UpsertRole({
                     roleId: 0,
                     roleName: name,
                     profileId: ProfileId,
-                    rolesMasters: masters,
+                    rolesMasters: flattenedData,
                     roleTransRights: transactions,
                     menuActionAddition: additiondata,
                     menuActionExclusion: exclutiondata
@@ -536,12 +634,15 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
                                                 {value === 3 && (
                                                     <Box sx={{ p: 3 }}>
                                                         <MasterRistriction formDataEdit={formDataEdit}
+                                                        setParentFunc={setParentFunc}
                                                             setMasters={setMasters}
                                                             setNewState={setNewState}
                                                             masterData={masters}
                                                             newState={newState}
                                                             mode={mode}
-                                                            mode1={mode1} />
+                                                            mode1={mode1}
+                                                            parentData={parentData}
+                                                        />
                                                     </Box>
                                                 )}
                                             </div>
