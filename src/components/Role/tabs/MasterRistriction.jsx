@@ -27,9 +27,11 @@ const customFormGroupStyle2 = {
 };
 
 
-export default function MasterRistriction({ formDataEdit, setMasters, mode,mode1, setNewState, newState,masterData }) {
+export default function MasterRistriction({ formDataEdit, setMasters, mode,mode1, setNewState, newState,masterData,parentData,setParentFunc }) {
   const [master, setmaster] = React.useState([]);
   const [masteriId, setmasterId] = React.useState(null);
+  const [objects, setobject] = React.useState(null);
+
   // const [mode1, setMode1] = useState("");
   // useEffect(() => {
   //   setMode1(mode);
@@ -50,6 +52,7 @@ export default function MasterRistriction({ formDataEdit, setMasters, mode,mode1
 
 
   const handleClickEvents = async (item) => {
+    setobject(item)
     setmasterId(item.iId)
   };
  
@@ -103,7 +106,10 @@ export default function MasterRistriction({ formDataEdit, setMasters, mode,mode1
               mode1={mode1}
               masterData={masterData}
               setNewState={setNewState}
+              parentData={parentData}
               newState={newState}
+              setParentFunc={setParentFunc}
+              objects={objects}
             />
 
           </Paper>
@@ -113,4 +119,3 @@ export default function MasterRistriction({ formDataEdit, setMasters, mode,mode1
     </div>
   )
 }
-

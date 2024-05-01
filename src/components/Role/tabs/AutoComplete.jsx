@@ -42,6 +42,7 @@ export default function AutoComplete3({
     const [iTypeF2ICP, setiTypeF2ICP] = useState(1);
     useEffect(() => {
         setSearchKey(value || "");
+       
       }, [value]);
 
 
@@ -84,21 +85,20 @@ export default function AutoComplete3({
             <Autocomplete
                 id={key}
                 size="small"
-                value={{sName:value} || null}
-                // onChange={handleAutocompleteChange}
-                // value={value || ""}
+                value={suggestion.find(option => option.sName === value) || null}
                 onChange={(event, newValue) => {
-                    onChangeName(newValue);
-                }}
+                  // Pass an object containing both sName and iId to the onChangeName function
+                  onChangeName({
+                      sName: newValue ? newValue.sName : "",
+                      iId: newValue ? newValue.iId : 0
+                  });
+              }}
                 onInputChange={(event, newInputValue) => {
                     // Use this to trigger the API call
                     setSearchKey(newInputValue); // You might debounce this call to reduce API requests
                 }}
-                options={suggestion.map((data) => ({
-                    sName: data?.sName,
-                    sCode: data?.sCode,
-                    iId: data?.iId,
-                }))}
+                isOptionEqualToValue={(option, value) => option.sName === value.sName}
+                options={suggestion}
                 filterOptions={(options, { inputValue }) => {
                     return options.filter((option) =>
                         option.sName.toLowerCase().includes(inputValue.toLowerCase())||
@@ -106,9 +106,7 @@ export default function AutoComplete3({
                     );
                 }}
                 autoHighlight
-                getOptionLabel={(option) =>
-                    option && option.sName ? option.sName : ""
-                }
+                getOptionLabel={(option) => option.sName || ""}
                 renderOption={(props, option) => (
                     <li {...props}>
                         <div
