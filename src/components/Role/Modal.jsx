@@ -243,7 +243,7 @@ function Modal({ isOpen, handleNewClose, mode, resetChangesTrigger, formDataEdit
     useEffect(() => {
         setMode1(mode);
     }, [mode]);
-
+    console.log("123")
     useEffect(() => {
         const fetchData = async () => {
             try {
